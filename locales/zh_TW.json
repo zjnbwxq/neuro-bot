@@ -1,7 +1,14 @@
 {
-    "hello": "你好，歡迎來到神經元农場！",
-    "help_text": "這裡有可用的指令：...",
-    "market_welcome": "歡迎來到神經元市場！",
-    "farm_status": "你的农場狀態: {status}",
-    "fishing_result": "你捕獲了 {catch}!"
+    "hello": "你好，欢迎来到神经元农場！",
+    "help_text": "這裡有可用的指令：\n/hello - 和我打招呼\n/plant - 種下作物\n/breed - 繁殖動物\n/explore - 探索地區\n/market - 訪問跳蚤市場\n/shop - 訪問商店\n/fish - 釣魚\n/mahjong - 玩麻將\n/quest - 開始任務\n/open_chest - 開啟寶箱\n/boss_fight - 開始boss戰",
+    "plant_success": "你成功種下 {crop}!",
+    "breed_success": "你成功繁殖 {animal}!",
+    "explore_result": "你探索了 {region} 區域並發現了一些有趣的物品!",
+    "market_welcome": "欢迎来到跳蚤市場！今天干什么呢？",
+    "shop_welcome": "欢迎來到商店！今天想買什麼？",
+    "fishing_result": "你捕获了 {catch}!",
+    "mahjong_start": "一場麻將遊戲開始了！",
+    "quest_start": "你已經開始了新的任務！祝你好運！",
+    "chest_opened": "你打開了寶箱並獲得了一些有價值的東西!",
+    "boss_fight_start": "一個boss出現了！準備戰鬥吧！"
   }
