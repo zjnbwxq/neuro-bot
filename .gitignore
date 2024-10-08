@@ -1,0 +1,11 @@
+#忽略 .env文件
+.env
+
+#忽略Python环境
+venv/
+*.pyc
+
+#忽略日志文件
+*.log
+
+
