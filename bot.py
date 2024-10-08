@@ -1,13 +1,11 @@
 import discord
 from discord import app_commands
-from discord.ext import commands
 import os
 from dotenv import load_dotenv
 from language_manager import lang_manager
 
 load_dotenv()
 
-# 用户语言偏好存储
 user_languages = {}
 
 intents = discord.Intents.default()
@@ -20,6 +18,7 @@ class MyClient(discord.Client):
 
     async def setup_hook(self):
         await self.tree.sync()
+        print("Commands synced!")
 
 client = MyClient()
 
@@ -44,29 +43,24 @@ async def change_language(interaction: discord.Interaction, choice: app_commands
 
 @client.tree.command(name="farm", description="Show your farm status")
 async def farm(interaction: discord.Interaction):
-    lang_code = user_languages.get(str(interaction.user.id), 'en')
-    # 这里应该有查询数据库获取农场信息的逻辑
-    farm_status = "Your farm is doing great!"  # 示例状态
-    await interaction.response.send_message(lang_manager.get_text('farm_status', lang_code).format(status=farm_status))
+    await interaction.response.send_message("Farm status placeholder")
 
 @client.tree.command(name="market", description="Visit the flea market")
 async def market(interaction: discord.Interaction):
-    lang_code = user_languages.get(str(interaction.user.id), 'en')
-    # 这里应该有显示市场商品的逻辑
-    await interaction.response.send_message(lang_manager.get_text('market_welcome', lang_code))
+    await interaction.response.send_message("Market placeholder")
 
 @client.tree.command(name="fish", description="Go fishing")
 async def fish(interaction: discord.Interaction):
-    lang_code = user_languages.get(str(interaction.user.id), 'en')
-    # 这里应该有钓鱼游戏的逻辑
-    catch = "a big tuna"  # 示例捕获
-    await interaction.response.send_message(lang_manager.get_text('fishing_result', lang_code).format(catch=catch))
+    await interaction.response.send_message("Fishing placeholder")
 
 @client.tree.command(name="help", description="Show available commands")
 async def help_command(interaction: discord.Interaction):
-    lang_code = user_languages.get(str(interaction.user.id), 'en')
-    help_text = lang_manager.get_text('help_text', lang_code)
-    await interaction.response.send_message(help_text)
+    await interaction.response.send_message("Help placeholder")
 
-# 运行 bot
+@client.tree.command(name="sync", description="Sync commands (Admin only)")
+@app_commands.checks.has_permissions(administrator=True)
+async def sync(interaction: discord.Interaction):
+    await client.tree.sync()
+    await interaction.response.send_message("Commands synced!")
+
 client.run(os.getenv('DISCORD_TOKEN'))
