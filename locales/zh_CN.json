@@ -1,0 +1,7 @@
+{
+    "hello": "你好，我是你的 Discord 机器人。",
+    "welcome": "欢迎来到神经元农场, {username}!",
+    "command_not_found": "对不起，我不认识这个命令。",
+    "language_changed": "语言已更改为简体中文。",
+    "choose_language": "请选择语言：\n1. English\n2. 简体中文\n3. 繁體中文"
+  }
