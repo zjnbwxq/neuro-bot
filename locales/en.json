@@ -1,7 +1,7 @@
 {
-    "hello": "Hello! I am your Discord bot.",
-    "welcome": "Welcome to Neuro Farm, {username}!",
-    "command_not_found": "Sorry, I don't recognize that command.",
-    "language_changed": "Language has been changed to English.",
-    "choose_language": "Please choose a language:\n1. English\n2. 简体中文\n3. 繁體中文"
-  }
+  "hello": "Hello! Welcome to Neurofarm. ",
+  "help_text": "Here are the available commands: ...",
+  "market_welcome": "Welcome to the flea market!",
+  "farm_status": "Your farm status: {status}",
+  "fishing_result": "You caught {catch}!"
+}

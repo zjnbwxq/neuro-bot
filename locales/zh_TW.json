@@ -1,7 +1,7 @@
 {
-    "hello": "你好，我是你的Discord機器人。",
-    "welcome": "歡迎來到神經元農場, {username}!",
-    "command_not_found": "抱歉，我不認識這個命令。",
-    "language_changed": "語言已更改為繁體中文。",
-    "choose_language": "請選擇語言：\n1. English\n2. 简体中文\n3. 繁體中文"
+    "hello": "你好，歡迎來到神經元农場！",
+    "help_text": "這裡有可用的指令：...",
+    "market_welcome": "歡迎來到神經元市場！",
+    "farm_status": "你的农場狀態: {status}",
+    "fishing_result": "你捕獲了 {catch}!"
   }

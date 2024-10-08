@@ -42,7 +42,8 @@ async def on_ready():
 async def hello(interaction: discord.Interaction):
     try:
         lang_code = user_languages.get(str(interaction.user.id), 'en')
-        await interaction.response.send_message(lang_manager.get_text('hello', lang_code))
+        message = lang_manager.get_text('hello', lang_code)
+        await interaction.response.send_message(message)
     except Exception as e:
         logger.error(f"Error in hello command: {e}")
         await interaction.response.send_message("An error occurred. Please try again later.")
@@ -56,7 +57,8 @@ async def hello(interaction: discord.Interaction):
 async def change_language(interaction: discord.Interaction, choice: app_commands.Choice[str]):
     try:
         user_languages[str(interaction.user.id)] = choice.value
-        await interaction.response.send_message(lang_manager.get_text('language_changed', choice.value))
+        message = lang_manager.get_text('language_changed', choice.value)
+        await interaction.response.send_message(message)
     except Exception as e:
         logger.error(f"Error in change_language command: {e}")
         await interaction.response.send_message("An error occurred. Please try again later.")
@@ -67,7 +69,8 @@ async def farm(interaction: discord.Interaction):
         lang_code = user_languages.get(str(interaction.user.id), 'en')
         # 这里应该有查询数据库获取农场信息的逻辑
         farm_status = "Your farm is doing great!"  # 示例状态
-        await interaction.response.send_message(lang_manager.get_text('farm_status', lang_code).format(status=farm_status))
+        message = lang_manager.get_text('farm_status', lang_code).format(status=farm_status)
+        await interaction.response.send_message(message)
     except Exception as e:
         logger.error(f"Error in farm command: {e}")
         await interaction.response.send_message("An error occurred. Please try again later.")
@@ -76,7 +79,8 @@ async def farm(interaction: discord.Interaction):
 async def market(interaction: discord.Interaction):
     try:
         lang_code = user_languages.get(str(interaction.user.id), 'en')
-        await interaction.response.send_message(lang_manager.get_text('market_welcome', lang_code))
+        message = lang_manager.get_text('market_welcome', lang_code)
+        await interaction.response.send_message(message)
     except Exception as e:
         logger.error(f"Error in market command: {e}")
         await interaction.response.send_message("An error occurred. Please try again later.")
@@ -86,7 +90,8 @@ async def fish(interaction: discord.Interaction):
     try:
         lang_code = user_languages.get(str(interaction.user.id), 'en')
         catch = "a big tuna"  # 示例捕获
-        await interaction.response.send_message(lang_manager.get_text('fishing_result', lang_code).format(catch=catch))
+        message = lang_manager.get_text('fishing_result', lang_code).format(catch=catch)
+        await interaction.response.send_message(message)
     except Exception as e:
         logger.error(f"Error in fish command: {e}")
         await interaction.response.send_message("An error occurred. Please try again later.")
