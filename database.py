@@ -167,6 +167,15 @@ async def setup_database():
     await init_db()
     await init_base_data()
 
+async def close_pool():
+    global pool
+    if pool:
+        pool.close()
+        print("Database connection pool closed.")
+
 if __name__ == "__main__":
     import asyncio
     asyncio.run(setup_database())
+
+# 确保导出所有需要的函数
+__all__ = ['setup_database', 'get_user', 'create_user', 'update_user_language', 'get_farm', 'create_farm', 'close_pool']
