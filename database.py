@@ -46,7 +46,8 @@ async def init_db():
                 discord_id VARCHAR(20) UNIQUE,
                 language VARCHAR(5) DEFAULT 'en',
                 coins INTEGER DEFAULT 100,
-                experience INTEGER DEFAULT 0
+                experience INTEGER DEFAULT 0,
+                level INTEGER DEFAULT 1
             )
             ''')
 
@@ -66,7 +67,8 @@ async def init_db():
                 crop_id SERIAL PRIMARY KEY,
                 name VARCHAR(50) UNIQUE,
                 growth_time INTEGER,
-                sell_price INTEGER
+                sell_price INTEGER,
+                planting_cost INTEGER
             )
             ''')
 
@@ -76,7 +78,8 @@ async def init_db():
                 planted_id SERIAL PRIMARY KEY,
                 farm_id INTEGER REFERENCES farms(farm_id),
                 crop_id INTEGER REFERENCES crops(crop_id),
-                planted_time TIMESTAMP
+                planted_time TIMESTAMP,
+                is_harvested BOOLEAN DEFAULT FALSE
             )
             ''')
 
@@ -87,7 +90,8 @@ async def init_db():
                 name VARCHAR(50) UNIQUE,
                 product VARCHAR(50),
                 production_time INTEGER,
-                sell_price INTEGER
+                sell_price INTEGER,
+                purchase_cost INTEGER
             )
             ''')
 
@@ -100,6 +104,18 @@ async def init_db():
                 last_collected_time TIMESTAMP
             )
             ''')
+
+            # 创建地区表
+            await connection.execute('''
+            CREATE TABLE IF NOT EXISTS regions (
+                region_id SERIAL PRIMARY KEY,
+                name VARCHAR(50) UNIQUE,
+                required_level INTEGER,
+                exploration_cost INTEGER
+            )
+            ''')
+
+    print("Database tables created successfully.")
 
 async def get_user(discord_id):
     async with pool.acquire() as connection:
@@ -127,36 +143,59 @@ async def create_farm(user_id, name):
 
 async def init_base_data():
     crops = [
-        ("Wheat", 3600, 10),
-        ("Corn", 7200, 20),
-        ("Tomato", 10800, 30)
+        ("Wheat", 3600, 10, 5),  # 名称, 生长时间(秒), 售价, 种植成本
+        ("Corn", 7200, 20, 10),
+        ("Tomato", 10800, 30, 15),
+        ("Potato", 14400, 40, 20),
+        ("Carrot", 5400, 15, 8)
     ]
+    
     animals = [
-        ("Chicken", "Egg", 3600, 5),
-        ("Cow", "Milk", 7200, 15),
-        ("Sheep", "Wool", 14400, 25)
+        ("Chicken", "Egg", 3600, 5, 50),  # 名称, 产品, 生产时间(秒), 产品售价, 购买成本
+        ("Cow", "Milk", 7200, 15, 200),
+        ("Sheep", "Wool", 14400, 25, 150),
+        ("Pig", "Bacon", 10800, 20, 100)
+    ]
+    
+    regions = [
+        ("Forest", 1, 10),  # 名称, 所需等级, 探索成本
+        ("Mountain", 5, 30),
+        ("Beach", 10, 50),
+        ("Desert", 15, 70)
     ]
 
     async with pool.acquire() as connection:
         async with connection.transaction():
+            # 插入作物数据
             for crop in crops:
                 await connection.execute('''
-                INSERT INTO crops (name, growth_time, sell_price)
-                VALUES ($1, $2, $3)
+                INSERT INTO crops (name, growth_time, sell_price, planting_cost)
+                VALUES ($1, $2, $3, $4)
                 ON CONFLICT (name) DO NOTHING
                 ''', *crop)
 
+            # 插入动物数据
             for animal in animals:
                 await connection.execute('''
-                INSERT INTO animals (name, product, production_time, sell_price)
-                VALUES ($1, $2, $3, $4)
+                INSERT INTO animals (name, product, production_time, sell_price, purchase_cost)
+                VALUES ($1, $2, $3, $4, $5)
                 ON CONFLICT (name) DO NOTHING
                 ''', *animal)
+
+            # 插入地区数据
+            for region in regions:
+                await connection.execute('''
+                INSERT INTO regions (name, required_level, exploration_cost)
+                VALUES ($1, $2, $3)
+                ON CONFLICT (name) DO NOTHING
+                ''', *region)
+
+    print("Base data initialized successfully.")
 
 async def setup_database():
     await init_pool()
     await init_db()
-    await init_base_data()
+    await init_base_data()  # 添加这一行
 
 # 确保导出所有需要的函数
 __all__ = ['setup_database', 'get_user', 'create_user', 'update_user_language', 'get_farm', 'create_farm', 'close_pool', 'get_crop', 'plant_crop', 'update_user_coins']
