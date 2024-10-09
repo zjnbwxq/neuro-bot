@@ -14,10 +14,6 @@ logger = logging.getLogger('NeuroFarmBot')
 # 加载环境变量
 load_dotenv()
 
-db_user = os.getenv('DB_USER')
-db_password = os.getenv('DB_PASSWORD')
-db_dsn = os.getenv('DB_DSN')
-
 # 设置 intents
 intents = discord.Intents.default()
 intents.message_content = True
@@ -47,13 +43,15 @@ client = NeuroFarmBot()
 async def on_ready():
     logger.info(f'{client.user} has connected to Discord!')
 
-
 @client.tree.command(name="hello", description="Say hello to the bot")
 async def hello(interaction: discord.Interaction):
     await client.db_ready.wait()
     try:
         user = await get_user(str(interaction.user.id))
-        lang_code = user[2] if user else 'en'
+        if not user:
+            await create_user(str(interaction.user.id))
+            user = await get_user(str(interaction.user.id))
+        lang_code = user['language']
         message = lang_manager.get_text('hello', lang_code)
         await interaction.response.send_message(message)
     except Exception as e:
@@ -203,12 +201,16 @@ async def boss_fight(interaction: discord.Interaction):
         logger.error(f"Error in boss_fight command: {e}")
         await interaction.response.send_message("An error occurred. Please try again later.")
 
-if __name__ == "__main__":
+# 在程序结束时关闭数据库连接池
+async def main():
     token = os.getenv('DISCORD_TOKEN')
     if not token:
         logger.error("No Discord token found. Make sure DISCORD_TOKEN is set in your .env file.")
-    else:
-        try:
-            client.run(token)
-        finally:
-            asyncio.run(close_pool())
+        return
+    try:
+        await client.start(token)
+    finally:
+        await close_pool()
+
+if __name__ == "__main__":
+    asyncio.run(main())
