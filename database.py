@@ -72,6 +72,11 @@ async def init_db():
             )
             ''')
 
+            # 检查并添加 planting_cost 列
+            await connection.execute('''
+            ALTER TABLE crops ADD COLUMN IF NOT EXISTS planting_cost INTEGER
+            ''')
+
             # 创建已种植作物表
             await connection.execute('''
             CREATE TABLE IF NOT EXISTS planted_crops (
@@ -171,7 +176,10 @@ async def init_base_data():
                 await connection.execute('''
                 INSERT INTO crops (name, growth_time, sell_price, planting_cost)
                 VALUES ($1, $2, $3, $4)
-                ON CONFLICT (name) DO NOTHING
+                ON CONFLICT (name) DO UPDATE SET
+                    growth_time = EXCLUDED.growth_time,
+                    sell_price = EXCLUDED.sell_price,
+                    planting_cost = EXCLUDED.planting_cost
                 ''', *crop)
 
             # 插入动物数据
