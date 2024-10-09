@@ -100,6 +100,11 @@ async def init_db():
             )
             ''')
 
+            # 检查并添加 purchase_cost 列
+            await connection.execute('''
+            ALTER TABLE animals ADD COLUMN IF NOT EXISTS purchase_cost INTEGER
+            ''')
+
             # 创建已拥有动物表
             await connection.execute('''
             CREATE TABLE IF NOT EXISTS owned_animals (
@@ -124,27 +129,109 @@ async def init_db():
 
 async def get_user(discord_id):
     async with pool.acquire() as connection:
-        row = await connection.fetchrow('SELECT * FROM users WHERE discord_id = $1', discord_id)
-        return row
+        return await connection.fetchrow('SELECT * FROM users WHERE discord_id = $1', discord_id)
 
 async def create_user(discord_id, language='en'):
     async with pool.acquire() as connection:
-        await connection.execute('INSERT INTO users (discord_id, language) VALUES ($1, $2)', discord_id, language)
+        return await connection.fetchrow(
+            'INSERT INTO users (discord_id, language) VALUES ($1, $2) RETURNING *',
+            discord_id, language
+        )
 
 async def update_user_language(discord_id, language):
     async with pool.acquire() as connection:
-        await connection.execute('UPDATE users SET language = $1 WHERE discord_id = $2', language, discord_id)
+        return await connection.fetchrow(
+            'UPDATE users SET language = $1 WHERE discord_id = $2 RETURNING *',
+            language, discord_id
+        )
+
+async def update_user_coins(user_id, new_coins):
+    async with pool.acquire() as connection:
+        return await connection.fetchrow(
+            'UPDATE users SET coins = $1 WHERE user_id = $2 RETURNING *',
+            new_coins, user_id
+        )
+
+async def update_user_experience(user_id, new_experience):
+    async with pool.acquire() as connection:
+        return await connection.fetchrow(
+            'UPDATE users SET experience = $1 WHERE user_id = $2 RETURNING *',
+            new_experience, user_id
+        )
 
 async def get_farm(user_id):
     async with pool.acquire() as connection:
-        row = await connection.fetchrow('SELECT * FROM farms WHERE user_id = $1', user_id)
-        return row
+        return await connection.fetchrow('SELECT * FROM farms WHERE user_id = $1', user_id)
 
 async def create_farm(user_id, name):
     async with pool.acquire() as connection:
-        await connection.execute('INSERT INTO farms (user_id, name) VALUES ($1, $2)', user_id, name)
+        return await connection.fetchrow(
+            'INSERT INTO farms (user_id, name) VALUES ($1, $2) RETURNING *',
+            user_id, name
+        )
 
-# 添加更多的数据库操作函数...
+async def get_crop(crop_name):
+    async with pool.acquire() as connection:
+        return await connection.fetchrow('SELECT * FROM crops WHERE name = $1', crop_name)
+
+async def plant_crop(farm_id, crop_id, planted_time):
+    async with pool.acquire() as connection:
+        return await connection.fetchrow(
+            'INSERT INTO planted_crops (farm_id, crop_id, planted_time) VALUES ($1, $2, $3) RETURNING *',
+            farm_id, crop_id, planted_time
+        )
+
+async def get_planted_crops(farm_id):
+    async with pool.acquire() as connection:
+        return await connection.fetch(
+            'SELECT pc.*, c.name, c.growth_time, c.sell_price FROM planted_crops pc '
+            'JOIN crops c ON pc.crop_id = c.crop_id '
+            'WHERE pc.farm_id = $1 AND pc.is_harvested = FALSE',
+            farm_id
+        )
+
+async def harvest_crop(planted_id):
+    async with pool.acquire() as connection:
+        return await connection.fetchrow(
+            'UPDATE planted_crops SET is_harvested = TRUE WHERE planted_id = $1 RETURNING *',
+            planted_id
+        )
+
+async def get_animal(animal_name):
+    async with pool.acquire() as connection:
+        return await connection.fetchrow('SELECT * FROM animals WHERE name = $1', animal_name)
+
+async def purchase_animal(farm_id, animal_id):
+    async with pool.acquire() as connection:
+        return await connection.fetchrow(
+            'INSERT INTO owned_animals (farm_id, animal_id, last_collected_time) '
+            'VALUES ($1, $2, NOW()) RETURNING *',
+            farm_id, animal_id
+        )
+
+async def get_owned_animals(farm_id):
+    async with pool.acquire() as connection:
+        return await connection.fetch(
+            'SELECT oa.*, a.name, a.product, a.production_time, a.sell_price FROM owned_animals oa '
+            'JOIN animals a ON oa.animal_id = a.animal_id '
+            'WHERE oa.farm_id = $1',
+            farm_id
+        )
+
+async def collect_animal_product(owned_id):
+    async with pool.acquire() as connection:
+        return await connection.fetchrow(
+            'UPDATE owned_animals SET last_collected_time = NOW() WHERE owned_id = $1 RETURNING *',
+            owned_id
+        )
+
+async def get_region(region_name):
+    async with pool.acquire() as connection:
+        return await connection.fetchrow('SELECT * FROM regions WHERE name = $1', region_name)
+
+async def get_all_regions():
+    async with pool.acquire() as connection:
+        return await connection.fetch('SELECT * FROM regions ORDER BY required_level')
 
 async def init_base_data():
     crops = [
@@ -187,7 +274,11 @@ async def init_base_data():
                 await connection.execute('''
                 INSERT INTO animals (name, product, production_time, sell_price, purchase_cost)
                 VALUES ($1, $2, $3, $4, $5)
-                ON CONFLICT (name) DO NOTHING
+                ON CONFLICT (name) DO UPDATE SET
+                    product = EXCLUDED.product,
+                    production_time = EXCLUDED.production_time,
+                    sell_price = EXCLUDED.sell_price,
+                    purchase_cost = EXCLUDED.purchase_cost
                 ''', *animal)
 
             # 插入地区数据
@@ -205,18 +296,11 @@ async def setup_database():
     await init_db()
     await init_base_data()  # 添加这一行
 
-# 确保导出所有需要的函数
-__all__ = ['setup_database', 'get_user', 'create_user', 'update_user_language', 'get_farm', 'create_farm', 'close_pool', 'get_crop', 'plant_crop', 'update_user_coins']
-
-async def get_crop(crop_name):
-    async with pool.acquire() as connection:
-        return await connection.fetchrow('SELECT * FROM crops WHERE name = $1', crop_name)
-
-async def plant_crop(farm_id, crop_id, planted_time):
-    async with pool.acquire() as connection:
-        await connection.execute('INSERT INTO planted_crops (farm_id, crop_id, planted_time) VALUES ($1, $2, $3)',
-                                 farm_id, crop_id, planted_time)
-
-async def update_user_coins(user_id, new_coins):
-    async with pool.acquire() as connection:
-        await connection.execute('UPDATE users SET coins = $1 WHERE user_id = $2', new_coins, user_id)
+# 更新 __all__ 列表以包含所有新函数
+__all__ = [
+    'setup_database', 'get_user', 'create_user', 'update_user_language',
+    'update_user_coins', 'update_user_experience', 'get_farm', 'create_farm',
+    'get_crop', 'plant_crop', 'get_planted_crops', 'harvest_crop',
+    'get_animal', 'purchase_animal', 'get_owned_animals', 'collect_animal_product',
+    'get_region', 'get_all_regions', 'close_pool'
+]
