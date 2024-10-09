@@ -26,15 +26,15 @@ async def init_pool():
             min_size=2,
             max_size=5
         )
-        print("Database connection pool created successfully.")
+        print("数据库连接池创建成功。")
     except Exception as error:
-        print("Error creating connection pool:", error)
+        print("创建连接池时出错:", error)
 
 async def close_pool():
     global pool
     if pool:
         await pool.close()
-        print("Database connection pool closed.")
+        print("数据库连接池已关闭。")
 
 async def init_db():
     async with pool.acquire() as connection:
@@ -124,27 +124,117 @@ async def init_db():
 
 async def get_user(discord_id):
     async with pool.acquire() as connection:
-        row = await connection.fetchrow('SELECT * FROM users WHERE discord_id = $1', discord_id)
-        return row
+        return await connection.fetchrow('SELECT * FROM users WHERE discord_id = $1', discord_id)
 
 async def create_user(discord_id, language='en'):
     async with pool.acquire() as connection:
-        await connection.execute('INSERT INTO users (discord_id, language) VALUES ($1, $2)', discord_id, language)
+        return await connection.fetchrow(
+            'INSERT INTO users (discord_id, language) VALUES ($1, $2) RETURNING *',
+            discord_id, language
+        )
 
 async def update_user_language(discord_id, language):
     async with pool.acquire() as connection:
-        await connection.execute('UPDATE users SET language = $1 WHERE discord_id = $2', language, discord_id)
+        return await connection.fetchrow(
+            'UPDATE users SET language = $2 WHERE discord_id = $1 RETURNING *',
+            discord_id, language
+        )
+
+async def update_user_coins(user_id, amount):
+    async with pool.acquire() as connection:
+        return await connection.fetchrow('''
+            UPDATE users 
+            SET coins = coins + $2 
+            WHERE user_id = $1 
+            RETURNING *
+        ''', user_id, amount)
+
+async def update_user_experience(user_id, amount):
+    async with pool.acquire() as connection:
+        return await connection.fetchrow('''
+            UPDATE users 
+            SET experience = experience + $2 
+            WHERE user_id = $1 
+            RETURNING *
+        ''', user_id, amount)
 
 async def get_farm(user_id):
     async with pool.acquire() as connection:
-        row = await connection.fetchrow('SELECT * FROM farms WHERE user_id = $1', user_id)
-        return row
+        return await connection.fetchrow('SELECT * FROM farms WHERE user_id = $1', user_id)
 
 async def create_farm(user_id, name):
     async with pool.acquire() as connection:
-        await connection.execute('INSERT INTO farms (user_id, name) VALUES ($1, $2)', user_id, name)
+        return await connection.fetchrow(
+            'INSERT INTO farms (user_id, name) VALUES ($1, $2) RETURNING *',
+            user_id, name
+        )
 
-# 添加更多的数据库操作函数...
+async def get_crop(crop_name):
+    async with pool.acquire() as connection:
+        return await connection.fetchrow('SELECT * FROM crops WHERE name = $1', crop_name)
+
+async def plant_crop(farm_id, crop_id, planted_time):
+    async with pool.acquire() as connection:
+        return await connection.fetchrow('''
+            INSERT INTO planted_crops (farm_id, crop_id, planted_time)
+            VALUES ($1, $2, $3)
+            RETURNING *
+        ''', farm_id, crop_id, planted_time)
+
+async def get_planted_crops(farm_id):
+    async with pool.acquire() as connection:
+        return await connection.fetch('''
+            SELECT pc.*, c.name, c.growth_time, c.sell_price
+            FROM planted_crops pc
+            JOIN crops c ON pc.crop_id = c.crop_id
+            WHERE pc.farm_id = $1
+        ''', farm_id)
+
+async def harvest_crop(planted_crop_id):
+    async with pool.acquire() as connection:
+        return await connection.fetchrow('''
+            DELETE FROM planted_crops
+            WHERE planted_crop_id = $1
+            RETURNING *
+        ''', planted_crop_id)
+
+async def get_animal(animal_name):
+    async with pool.acquire() as connection:
+        return await connection.fetchrow('SELECT * FROM animals WHERE name = $1', animal_name)
+
+async def purchase_animal(farm_id, animal_id, purchased_time):
+    async with pool.acquire() as connection:
+        return await connection.fetchrow('''
+            INSERT INTO owned_animals (farm_id, animal_id, purchased_time)
+            VALUES ($1, $2, $3)
+            RETURNING *
+        ''', farm_id, animal_id, purchased_time)
+
+async def get_owned_animals(farm_id):
+    async with pool.acquire() as connection:
+        return await connection.fetch('''
+            SELECT oa.*, a.name, a.product, a.production_time, a.sell_price
+            FROM owned_animals oa
+            JOIN animals a ON oa.animal_id = a.animal_id
+            WHERE oa.farm_id = $1
+        ''', farm_id)
+
+async def collect_animal_product(owned_animal_id):
+    async with pool.acquire() as connection:
+        return await connection.fetchrow('''
+            UPDATE owned_animals
+            SET last_collected = CURRENT_TIMESTAMP
+            WHERE owned_animal_id = $1
+            RETURNING *
+        ''', owned_animal_id)
+
+async def get_region(region_name):
+    async with pool.acquire() as connection:
+        return await connection.fetchrow('SELECT * FROM regions WHERE name = $1', region_name)
+
+async def get_all_regions():
+    async with pool.acquire() as connection:
+        return await connection.fetch('SELECT * FROM regions ORDER BY required_level')
 
 async def init_base_data():
     crops = [
@@ -213,14 +303,3 @@ __all__ = [
     'get_animal', 'purchase_animal', 'get_owned_animals', 'collect_animal_product',
     'get_region', 'get_all_regions', 'close_pool'
 ]
-
-async def get_crop(crop_name):
-    async with pool.acquire() as connection:
-        return await connection.fetchrow('SELECT * FROM crops WHERE name = $1', crop_name)
-
-async def plant_crop(farm_id, crop_id, planted_time):
-    async with pool.acquire() as connection:
-        await connection.execute('''
-        INSERT INTO planted_crops (farm_id, crop_id, planted_time)
-        VALUES ($1, $2, $3)
-        ''', farm_id, crop_id, planted_time)
