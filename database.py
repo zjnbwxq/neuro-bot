@@ -61,7 +61,7 @@ async def init_db():
             )
             ''')
 
-            # 更新作物表的创建
+            # 创建作物表
             await connection.execute('''
             CREATE TABLE IF NOT EXISTS crops (
                 crop_id SERIAL PRIMARY KEY,
@@ -70,13 +70,6 @@ async def init_db():
                 sell_price INTEGER,
                 planting_cost INTEGER
             )
-            DO $$ 
-            BEGIN 
-                IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
-                               WHERE table_name='crops' AND column_name='planting_cost') THEN
-                    ALTER TABLE crops ADD COLUMN planting_cost INTEGER;
-                END IF;
-            END $$;
             ''')
 
             # 创建已种植作物表
