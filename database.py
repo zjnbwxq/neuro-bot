@@ -296,11 +296,86 @@ async def setup_database():
     await init_db()
     await init_base_data()  # 添加这一行
 
+async def get_all_crops():
+    async with pool.acquire() as connection:
+        return await connection.fetch('SELECT * FROM crops ORDER BY name')
+
+async def get_all_animals():
+    async with pool.acquire() as connection:
+        return await connection.fetch('SELECT * FROM animals ORDER BY name')
+
+async def get_all_regions():
+    async with pool.acquire() as connection:
+        return await connection.fetch('SELECT * FROM regions ORDER BY required_level')
+
+class GameInfoView(discord.ui.View):
+    def __init__(self):
+        super().__init__()
+        self.add_item(GameInfoSelect())
+
+class GameInfoSelect(discord.ui.Select):
+    def __init__(self):
+        options = [
+            discord.SelectOption(label="作物", description="查看所有可用作物", value="crops"),
+            discord.SelectOption(label="动物", description="查看所有可用动物", value="animals"),
+            discord.SelectOption(label="地区", description="查看所有可探索地区", value="regions")
+        ]
+        super().__init__(placeholder="选择要查看的信息类型", min_values=1, max_values=1, options=options)
+
+    async def callback(self, interaction: discord.Interaction):
+        if self.values[0] == "crops":
+            await self.show_crops(interaction)
+        elif self.values[0] == "animals":
+            await self.show_animals(interaction)
+        elif self.values[0] == "regions":
+            await self.show_regions(interaction)
+
+    async def show_crops(self, interaction):
+        crops = await get_all_crops()
+        embed = discord.Embed(title="可用作物", color=discord.Color.green())
+        for crop in crops:
+            embed.add_field(name=crop['name'], 
+                            value=f"生长时间: {crop['growth_time']}秒\n"
+                                  f"售价: {crop['sell_price']}金币\n"
+                                  f"种植成本: {crop['planting_cost']}金币", 
+                            inline=False)
+        await interaction.response.edit_message(embed=embed, view=self.view)
+
+    async def show_animals(self, interaction):
+        animals = await get_all_animals()
+        embed = discord.Embed(title="可用动物", color=discord.Color.blue())
+        for animal in animals:
+            embed.add_field(name=animal['name'], 
+                            value=f"产品: {animal['product']}\n"
+                                  f"生产时间: {animal['production_time']}秒\n"
+                                  f"产品售价: {animal['sell_price']}金币\n"
+                                  f"购买成本: {animal['purchase_cost']}金币", 
+                            inline=False)
+        await interaction.response.edit_message(embed=embed, view=self.view)
+
+    async def show_regions(self, interaction):
+        regions = await get_all_regions()
+        embed = discord.Embed(title="可探索地区", color=discord.Color.orange())
+        for region in regions:
+            embed.add_field(name=region['name'], 
+                            value=f"等级要求: {region['required_level']}\n"
+                                  f"探索成本: {region['exploration_cost']}金币", 
+                            inline=False)
+        await interaction.response.edit_message(embed=embed, view=self.view)
+
+@app_commands.command(name="gameinfo", description="查看游戏信息")
+async def gameinfo(interaction: discord.Interaction):
+    view = GameInfoView()
+    await interaction.response.send_message("选择要查看的游戏信息类型：", view=view)
+
+# 在你的主bot文件中注册这个命令
+client.tree.add_command(gameinfo)
+
 # 更新 __all__ 列表以包含所有新函数
 __all__ = [
     'setup_database', 'get_user', 'create_user', 'update_user_language',
     'update_user_coins', 'update_user_experience', 'get_farm', 'create_farm',
     'get_crop', 'plant_crop', 'get_planted_crops', 'harvest_crop',
     'get_animal', 'purchase_animal', 'get_owned_animals', 'collect_animal_product',
-    'get_region', 'get_all_regions', 'close_pool'
+    'get_region', 'get_all_regions', 'close_pool', 'get_all_crops', 'get_all_animals'
 ]
