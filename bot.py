@@ -212,6 +212,19 @@ async def change_language(interaction: discord.Interaction, language: str):
         logger.error(f"Error in change_language command: {e}")
         await interaction.response.send_message("An error occurred. Please try again later.")
 
+@client.tree.command(name="sync", description="Sync bot commands")
+@app_commands.checks.has_permissions(administrator=True)
+async def sync(interaction: discord.Interaction):
+    await client.db_ready.wait()
+    try:
+        logger.info("Manually syncing commands...")
+        synced = await client.tree.sync()
+        await interaction.response.send_message(f"同步了 {len(synced)} 个命令！")
+        logger.info(f"Manually synced {len(synced)} command(s)")
+    except Exception as e:
+        logger.error(f"Error syncing commands: {e}")
+        await interaction.response.send_message("同步命令时发生错误。请稍后再试。")
+
 # 在程序结束时关闭数据库连接池
 async def main():
     token = os.getenv('DISCORD_TOKEN')
