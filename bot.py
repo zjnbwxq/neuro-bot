@@ -201,6 +201,11 @@ async def boss_fight(interaction: discord.Interaction):
         logger.error(f"Error in boss_fight command: {e}")
         await interaction.response.send_message("An error occurred. Please try again later.")
 
+@client.tree.command(name="change_language", description="Change the language")
+async def change_language(interaction: discord.Interaction, language: str):
+    # 语言更改逻辑
+    await interaction.response.send_message(f"Language changed to {language}!")
+
 # 在程序结束时关闭数据库连接池
 async def main():
     token = os.getenv('DISCORD_TOKEN')
