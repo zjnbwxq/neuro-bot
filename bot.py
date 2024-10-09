@@ -202,12 +202,17 @@ async def boss_fight(interaction: discord.Interaction):
         await interaction.response.send_message("An error occurred. Please try again later.")
 
 @client.tree.command(name="change_language", description="Change the language")
-async def change_language(interaction: discord.Interaction, language: str):
+@app_commands.choices(language=[
+    app_commands.Choice(name="简体中文", value="zh_CN"),
+    app_commands.Choice(name="繁體中文", value="zh_TW"),
+    app_commands.Choice(name="English", value="en")
+])
+async def change_language(interaction: discord.Interaction, language: app_commands.Choice[str]):
     await client.db_ready.wait()
     try:
         # 更新用户的语言设置
-        await update_user_language(str(interaction.user.id), language)
-        await interaction.response.send_message(f"Language changed to {language}!")
+        await update_user_language(str(interaction.user.id), language.value)
+        await interaction.response.send_message(f"Language changed to {language.name}!")
     except Exception as e:
         logger.error(f"Error in change_language command: {e}")
         await interaction.response.send_message("An error occurred. Please try again later.")
