@@ -5,7 +5,9 @@ import os
 from dotenv import load_dotenv
 import logging
 from language_manager import lang_manager
-from database import setup_database, get_user, create_user, update_user_language, get_farm, create_farm, close_pool
+from database import setup_database, get_user, create_user, update_user_language, get_farm, create_farm, close_pool, get_crop, plant_crop, update_user_coins
+import random
+from datetime import datetime, timedelta
 
 # 设置日志
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -75,9 +77,36 @@ async def plant(interaction: discord.Interaction, crop: str):
     await client.db_ready.wait()
     try:
         user = await get_user(str(interaction.user.id))
-        lang_code = user[2] if user else 'en'
-        # 实现种植逻辑
+        if not user:
+            await create_user(str(interaction.user.id))
+            user = await get_user(str(interaction.user.id))
+        
+        lang_code = user['language']
+        farm = await get_farm(user['user_id'])
+        
+        if not farm:
+            await create_farm(user['user_id'], f"{interaction.user.name}'s Farm")
+            farm = await get_farm(user['user_id'])
+        
+        # 检查作物是否存在
+        crop_info = await get_crop(crop)
+        if not crop_info:
+            await interaction.response.send_message(lang_manager.get_text('crop_not_found', lang_code))
+            return
+        
+        # 检查用户是否有足够的金币
+        if user['coins'] < crop_info['planting_cost']:
+            await interaction.response.send_message(lang_manager.get_text('not_enough_coins', lang_code))
+            return
+        
+        # 种植作物
+        planted_time = datetime.now()
+        harvest_time = planted_time + timedelta(seconds=crop_info['growth_time'])
+        await plant_crop(farm['farm_id'], crop_info['crop_id'], planted_time)
+        await update_user_coins(user['user_id'], user['coins'] - crop_info['planting_cost'])
+        
         message = lang_manager.get_text('plant_success', lang_code).format(crop=crop)
+        message += "\n" + lang_manager.get_text('harvest_time', lang_code).format(time=harvest_time)
         await interaction.response.send_message(message)
     except Exception as e:
         logger.error(f"Error in plant command: {e}")

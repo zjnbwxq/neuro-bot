@@ -4,11 +4,14 @@
     "plant_success": "你成功种下 {crop}!",
     "breed_success": "你成功繁殖 {animal}!",
     "explore_result": "你探索了 {region} 区域并发现了一些有趣的东西!",
-    "market_welcome": "欢迎来到跳蚤市场！今天干什么呢？",
+    "market_welcome": "欢迎来到跳蚤市场！今天想交易什么呢？",
     "shop_welcome": "欢迎来到商店！今天想买什么?",
     "fishing_result": "你捕获了 {catch}!",
     "mahjong_start": "一场麻将游戏开始了!",
     "quest_start": "你已经开始了新的任务！祝你好运!",
     "chest_opened": "你打开了宝箱并获得了一些有价值的东西!",
-    "boss_fight_start": "一个boss出现了！准备战斗吧!"
-  }
+    "boss_fight_start": "一个boss出现了！准备战斗吧!",
+    "crop_not_found": "抱歉，农场里没有 {crop} 这种作物。",
+    "not_enough_coins": "你没有足够的金币来种植这种作物。",
+    "harvest_time": "你的作物将在 {time} 准备好收获。"
+}
