@@ -159,4 +159,17 @@ async def setup_database():
     await init_base_data()
 
 # 确保导出所有需要的函数
-__all__ = ['setup_database', 'get_user', 'create_user', 'update_user_language', 'get_farm', 'create_farm', 'close_pool']
+__all__ = ['setup_database', 'get_user', 'create_user', 'update_user_language', 'get_farm', 'create_farm', 'close_pool', 'get_crop', 'plant_crop', 'update_user_coins']
+
+async def get_crop(crop_name):
+    async with pool.acquire() as connection:
+        return await connection.fetchrow('SELECT * FROM crops WHERE name = $1', crop_name)
+
+async def plant_crop(farm_id, crop_id, planted_time):
+    async with pool.acquire() as connection:
+        await connection.execute('INSERT INTO planted_crops (farm_id, crop_id, planted_time) VALUES ($1, $2, $3)',
+                                 farm_id, crop_id, planted_time)
+
+async def update_user_coins(user_id, new_coins):
+    async with pool.acquire() as connection:
+        await connection.execute('UPDATE users SET coins = $1 WHERE user_id = $2', new_coins, user_id)
