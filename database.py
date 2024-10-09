@@ -213,3 +213,14 @@ __all__ = [
     'get_animal', 'purchase_animal', 'get_owned_animals', 'collect_animal_product',
     'get_region', 'get_all_regions', 'close_pool'
 ]
+
+async def get_crop(crop_name):
+    async with pool.acquire() as connection:
+        return await connection.fetchrow('SELECT * FROM crops WHERE name = $1', crop_name)
+
+async def plant_crop(farm_id, crop_id, planted_time):
+    async with pool.acquire() as connection:
+        await connection.execute('''
+        INSERT INTO planted_crops (farm_id, crop_id, planted_time)
+        VALUES ($1, $2, $3)
+        ''', farm_id, crop_id, planted_time)

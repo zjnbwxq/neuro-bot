@@ -5,7 +5,11 @@ import os
 from dotenv import load_dotenv
 import logging
 from language_manager import lang_manager
-from database import setup_database, get_user, create_user, update_user_language, get_farm, create_farm, close_pool, get_crop, plant_crop, update_user_coins
+from database import (
+    setup_database, get_user, create_user, update_user_language,
+    get_farm, create_farm, close_pool, get_crop, plant_crop,
+    update_user_coins
+)
 import random
 from datetime import datetime, timedelta
 
