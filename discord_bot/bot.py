@@ -4,14 +4,14 @@ import asyncio
 import os
 from dotenv import load_dotenv
 import logging
-from .language_manager import lang_manager
-from ..backend.database import (
-    setup_database, get_user, create_user, update_user_language,
-    update_user_coins, update_user_experience, get_farm, create_farm,
-    get_crop, plant_crop, get_planted_crops, harvest_crop,
-    get_animal, purchase_animal, get_owned_animals, collect_animal_product,
-    get_region, get_all_regions, close_pool
-)
+from discord_bot.language_manager import lang_manager
+from backend.database import (
+       setup_database, get_user, create_user, update_user_language,
+       update_user_coins, update_user_experience, get_farm, create_farm,
+       get_crop, plant_crop, get_planted_crops, harvest_crop,
+       get_animal, purchase_animal, get_owned_animals, collect_animal_product,
+       get_region, get_all_regions, close_pool
+   )
 import random
 from datetime import datetime, timedelta
 
