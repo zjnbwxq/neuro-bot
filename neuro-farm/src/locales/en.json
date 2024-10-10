@@ -1,0 +1,34 @@
+{
+    "nav": {
+      "gameDetails": "Game Details",
+      "privacyPolicy": "Privacy Policy",
+      "register": "Register",
+      "login": "Login",
+      "userCenter": "User Center"
+    },
+    "register": {
+      "title": "User Registration",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Register"
+    },
+    "login": {
+      "title": "User Login",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Login"
+    },
+    "gameDetails": {
+      "title": "Game Details",
+      "description": "Here you can find detailed information about the game."
+    },
+    "privacyPolicy": {
+      "title": "Privacy Policy",
+      "description": "Welcome to our Privacy Policy."
+    },
+    "userCenter": {
+      "title": "User Center",
+      "welcome": "Welcome, {email}!",
+      "loading": "Loading user information..."
+    }
+  }
