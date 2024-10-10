@@ -61,14 +61,39 @@ async def init_db():
             )
             ''')
 
-            # 创建作物表
+            # 修改作物表
             await connection.execute('''
             CREATE TABLE IF NOT EXISTS crops (
                 crop_id SERIAL PRIMARY KEY,
                 name VARCHAR(50) UNIQUE,
                 growth_time INTEGER,
                 sell_price INTEGER,
-                planting_cost INTEGER
+                planting_cost INTEGER,
+                emoji VARCHAR(5)
+            )
+            ''')
+
+            # 修改动物表
+            await connection.execute('''
+            CREATE TABLE IF NOT EXISTS animals (
+                animal_id SERIAL PRIMARY KEY,
+                name VARCHAR(50) UNIQUE,
+                product VARCHAR(50),
+                production_time INTEGER,
+                sell_price INTEGER,
+                purchase_cost INTEGER,
+                emoji VARCHAR(5)
+            )
+            ''')
+
+            # 修改地区表
+            await connection.execute('''
+            CREATE TABLE IF NOT EXISTS regions (
+                region_id SERIAL PRIMARY KEY,
+                name VARCHAR(50) UNIQUE,
+                required_level INTEGER,
+                exploration_cost INTEGER,
+                emoji VARCHAR(5)
             )
             ''')
 
@@ -88,18 +113,6 @@ async def init_db():
             )
             ''')
 
-            # 创建动物表
-            await connection.execute('''
-            CREATE TABLE IF NOT EXISTS animals (
-                animal_id SERIAL PRIMARY KEY,
-                name VARCHAR(50) UNIQUE,
-                product VARCHAR(50),
-                production_time INTEGER,
-                sell_price INTEGER,
-                purchase_cost INTEGER
-            )
-            ''')
-
             # 创建已拥有动物表
             await connection.execute('''
             CREATE TABLE IF NOT EXISTS owned_animals (
@@ -107,16 +120,6 @@ async def init_db():
                 farm_id INTEGER REFERENCES farms(farm_id),
                 animal_id INTEGER REFERENCES animals(animal_id),
                 last_collected_time TIMESTAMP
-            )
-            ''')
-
-            # 创建地区表
-            await connection.execute('''
-            CREATE TABLE IF NOT EXISTS regions (
-                region_id SERIAL PRIMARY KEY,
-                name VARCHAR(50) UNIQUE,
-                required_level INTEGER,
-                exploration_cost INTEGER
             )
             ''')
 
@@ -264,28 +267,37 @@ async def init_base_data():
             # 插入作物数据
             for crop in crops:
                 await connection.execute('''
-                INSERT INTO crops (name, growth_time, sell_price, planting_cost)
-                VALUES ($1, $2, $3, $4)
+                INSERT INTO crops (name, growth_time, sell_price, planting_cost, emoji)
+                VALUES ($1, $2, $3, $4, $5)
                 ON CONFLICT (name) DO UPDATE SET
                     growth_time = EXCLUDED.growth_time,
                     sell_price = EXCLUDED.sell_price,
-                    planting_cost = EXCLUDED.planting_cost
+                    planting_cost = EXCLUDED.planting_cost,
+                    emoji = EXCLUDED.emoji
                 ''', *crop)
 
             # 插入动物数据
             for animal in animals:
                 await connection.execute('''
-                INSERT INTO animals (name, product, production_time, sell_price, purchase_cost)
-                VALUES ($1, $2, $3, $4, $5)
-                ON CONFLICT (name) DO NOTHING
+                INSERT INTO animals (name, product, production_time, sell_price, purchase_cost, emoji)
+                VALUES ($1, $2, $3, $4, $5, $6)
+                ON CONFLICT (name) DO UPDATE SET
+                    product = EXCLUDED.product,
+                    production_time = EXCLUDED.production_time,
+                    sell_price = EXCLUDED.sell_price,
+                    purchase_cost = EXCLUDED.purchase_cost,
+                    emoji = EXCLUDED.emoji
                 ''', *animal)
 
             # 插入地区数据
             for region in regions:
                 await connection.execute('''
-                INSERT INTO regions (name, required_level, exploration_cost)
-                VALUES ($1, $2, $3)
-                ON CONFLICT (name) DO NOTHING
+                INSERT INTO regions (name, required_level, exploration_cost, emoji)
+                VALUES ($1, $2, $3, $4)
+                ON CONFLICT (name) DO UPDATE SET
+                    required_level = EXCLUDED.required_level,
+                    exploration_cost = EXCLUDED.exploration_cost,
+                    emoji = EXCLUDED.emoji
                 ''', *region)
 
     print("Base data initialized successfully.")

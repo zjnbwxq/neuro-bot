@@ -97,7 +97,7 @@ async def plant(interaction: discord.Interaction, crop: str):
         # 检查作物是否存在
         crop_info = await get_crop(crop)
         if not crop_info:
-            await interaction.response.send_message(lang_manager.get_text('crop_not_found', lang_code))
+            await interaction.response.send_message(lang_manager.get_text('crop_not_found', lang_code).format(crop=crop))
             return
         
         # 检查用户是否有足够的金币
@@ -109,13 +109,13 @@ async def plant(interaction: discord.Interaction, crop: str):
         planted_time = datetime.now()
         harvest_time = planted_time + timedelta(seconds=crop_info['growth_time'])
         await plant_crop(farm['farm_id'], crop_info['crop_id'], planted_time)
-        await update_user_coins(user['user_id'], user['coins'] - crop_info['planting_cost'])
+        await update_user_coins(user['user_id'], -crop_info['planting_cost'])
         
-        message = lang_manager.get_text('plant_success', lang_code).format(crop=crop)
-        message += "\n" + lang_manager.get_text('harvest_time', lang_code).format(time=harvest_time)
-        await interaction.response.send_message(message)
-        emoji = crop_info['emoji']  # 假设我们在数据库中存储了表情符号
-        await interaction.response.send_message(f"{emoji} {lang_manager.get_text('plant_success', lang_code).format(crop=crop)}")
+        # 发送成功消息
+        plant_success_msg = lang_manager.get_text('plant_success', lang_code).format(crop=crop_info['emoji'] + " " + crop)
+        harvest_time_msg = lang_manager.get_text('harvest_time', lang_code).format(time=harvest_time.strftime("%Y-%m-%d %H:%M:%S"))
+        await interaction.response.send_message(f"{plant_success_msg}\n{harvest_time_msg}")
+    
     except Exception as e:
         logger.error(f"Error in plant command: {e}")
         await interaction.response.send_message("An error occurred. Please try again later.")
