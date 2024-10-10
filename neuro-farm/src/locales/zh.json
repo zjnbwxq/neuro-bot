@@ -1,0 +1,34 @@
+{
+    "nav": {
+      "gameDetails": "游戏详情",
+      "privacyPolicy": "隐私政策",
+      "register": "注册",
+      "login": "登录",
+      "userCenter": "用户中心"
+    },
+    "register": {
+      "title": "用户注册",
+      "email": "电子邮箱",
+      "password": "密码",
+      "submit": "注册"
+    },
+    "login": {
+      "title": "用户登录",
+      "email": "电子邮箱",
+      "password": "密码",
+      "submit": "登录"
+    },
+    "gameDetails": {
+      "title": "游戏详情",
+      "description": "这里展示游戏的详细信息。"
+    },
+    "privacyPolicy": {
+      "title": "隐私政策",
+      "description": "欢迎阅读我们的隐私政策。"
+    },
+    "userCenter": {
+      "title": "用户中心",
+      "welcome": "欢迎，{email}！",
+      "loading": "正在加载用户信息..."
+    }
+  }

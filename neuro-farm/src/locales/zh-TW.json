@@ -1,0 +1,34 @@
+{
+    "nav": {
+      "gameDetails": "遊戲詳情",
+      "privacyPolicy": "隱私政策",
+      "register": "註冊",
+      "login": "登錄",
+      "userCenter": "用戶中心"
+    },
+    "register": {
+      "title": "用戶註冊",
+      "email": "電子郵箱",
+      "password": "密碼",
+      "submit": "註冊"
+    },
+    "login": {
+      "title": "用戶登錄",
+      "email": "電子郵箱",
+      "password": "密碼",
+      "submit": "登錄"
+    },
+    "gameDetails": {
+      "title": "遊戲詳情",
+      "description": "這裡展示遊戲的詳細信息。"
+    },
+    "privacyPolicy": {
+      "title": "隱私政策",
+      "description": "歡迎閱讀我們的隱私政策。"
+    },
+    "userCenter": {
+      "title": "用戶中心",
+      "welcome": "歡迎，{email}！",
+      "loading": "正在加載用戶信息..."
+    }
+  }
