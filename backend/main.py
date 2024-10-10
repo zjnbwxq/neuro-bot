@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import users, characters, auth
+from .routers import users, characters, auth, farm
 from .database import engine, Base
 
 app = FastAPI(
@@ -26,5 +26,6 @@ Base.metadata.create_all(bind=engine)
 
 # 包含路由
 app.include_router(auth.router)
-app.include_router(users.router)
+app.include_router(users.router, prefix="/api/users", tags=["users"])
 app.include_router(characters.router)
+app.include_router(farm.router, prefix="/api/farms", tags=["farms"])
