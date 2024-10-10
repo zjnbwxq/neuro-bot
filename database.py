@@ -312,6 +312,10 @@ async def setup_database():
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+    await drop_all_tables()  # 添加这一行
+>>>>>>> parent of cd68f07 (12)
 =======
     await drop_all_tables()  # 添加这一行
 >>>>>>> parent of cd68f07 (12)
