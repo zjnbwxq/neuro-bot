@@ -1,18 +1,32 @@
 import asyncpg
 import os
 from dotenv import load_dotenv
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+from dotenv import load_dotenv
 
-load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '.env'))
+# 加载环境变量
+load_dotenv()
 
-# 从环境变量加载数据库连接信息
-db_user = os.getenv('DB_USER')
-db_password = os.getenv('DB_PASSWORD')
-db_host = os.getenv('DB_HOST')  # 例如："your-db-hostname"
-db_port = os.getenv('DB_PORT', 5432)  # PostgreSQL 默认端口为 5432
-db_name = os.getenv('DB_NAME')
+# 从环境变量获取数据库连接信息
+DB_HOST = os.getenv("DB_HOST")
+DB_PORT = os.getenv("DB_PORT")
+DB_NAME = os.getenv("DB_NAME")
+DB_USER = os.getenv("DB_USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
 
-# 初始化连接池
-pool = None
+# 构建数据库 URL
+SQLALCHEMY_DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+
+# 创建数据库引擎
+engine = create_engine(SQLALCHEMY_DATABASE_URL)
+
+# 创建会话工厂
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# 创建基类
+Base = declarative_base()
 
 async def init_pool():
     global pool
@@ -29,6 +43,8 @@ async def init_pool():
         print("数据库连接池创建成功。")
     except Exception as error:
         print("创建连接池时出错:", error)
+    # 确保导出 engine 和 Base
+__all__ = ["engine", "Base", "SessionLocal"]
 
 async def close_pool():
     global pool
@@ -322,3 +338,9 @@ async def drop_all_tables():
         CASCADE
         ''')
     print("所有表格已删除。")
+    def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
