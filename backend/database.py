@@ -2,7 +2,7 @@ import asyncpg
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '.env'))
 
 # 从环境变量加载数据库连接信息
 db_user = os.getenv('DB_USER')

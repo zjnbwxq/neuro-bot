@@ -8,10 +8,11 @@ class LanguageManager:
         self.load_languages()
 
     def load_languages(self):
-        for filename in os.listdir('locales'):
+        locales_path = os.path.join(os.path.dirname(__file__), '..', 'locales')
+        for filename in os.listdir(locales_path):
             if filename.endswith('.json'):
                 lang_code = filename[:-5]
-                with open(f'locales/{filename}', 'r', encoding='utf-8') as file:
+                with open(os.path.join(locales_path, filename), 'r', encoding='utf-8') as file:
                     self.languages[lang_code] = json.load(file)
 
     def get_text(self, key, lang_code=None):

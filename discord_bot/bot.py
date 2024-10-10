@@ -4,8 +4,8 @@ import asyncio
 import os
 from dotenv import load_dotenv
 import logging
-from language_manager import lang_manager
-from database import (
+from .language_manager import lang_manager
+from ..backend.database import (
     setup_database, get_user, create_user, update_user_language,
     update_user_coins, update_user_experience, get_farm, create_farm,
     get_crop, plant_crop, get_planted_crops, harvest_crop,
