@@ -26,6 +26,10 @@ app.add_middleware(
 async def startup_event():
     await setup_database()
 
+   @app.get("/api/test")
+   async def test_route():
+       return {"message": "This is a test route"}
+
 # 包含路由
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(users.router, prefix="/api/users", tags=["users"])
