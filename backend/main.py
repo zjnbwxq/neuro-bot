@@ -1,8 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .routers import users, characters, auth, farm
-from .database import engine, Base, setup_database
-import asyncio
+from .database import setup_database
 
 app = FastAPI(
     title="Neuro Farm API",
@@ -28,9 +27,9 @@ async def startup_event():
     await setup_database()
 
 # 包含路由
-app.include_router(auth.router)
+app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(users.router, prefix="/api/users", tags=["users"])
-app.include_router(characters.router)
+app.include_router(characters.router, prefix="/api/characters", tags=["characters"])
 app.include_router(farm.router, prefix="/api/farms", tags=["farms"])
 
 if __name__ == "__main__":
