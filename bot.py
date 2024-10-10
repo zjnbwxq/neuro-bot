@@ -114,6 +114,8 @@ async def plant(interaction: discord.Interaction, crop: str):
         message = lang_manager.get_text('plant_success', lang_code).format(crop=crop)
         message += "\n" + lang_manager.get_text('harvest_time', lang_code).format(time=harvest_time)
         await interaction.response.send_message(message)
+        emoji = crop_info['emoji']  # 假设我们在数据库中存储了表情符号
+        await interaction.response.send_message(f"{emoji} {lang_manager.get_text('plant_success', lang_code).format(crop=crop)}")
     except Exception as e:
         logger.error(f"Error in plant command: {e}")
         await interaction.response.send_message("An error occurred. Please try again later.")
