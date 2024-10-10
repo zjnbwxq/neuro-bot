@@ -39,21 +39,16 @@ async def close_pool():
 async def init_db():
     async with pool.acquire() as connection:
         async with connection.transaction():
-            # 创建作物表
+            # 创建用户表
             await connection.execute('''
-            CREATE TABLE IF NOT EXISTS crops (
-                crop_id SERIAL PRIMARY KEY,
-                name VARCHAR(50) UNIQUE,
-                growth_time INTEGER,
-                sell_price INTEGER,
-                planting_cost INTEGER,
-                emoji VARCHAR(5)
+            CREATE TABLE IF NOT EXISTS users (
+                user_id SERIAL PRIMARY KEY,
+                discord_id VARCHAR(20) UNIQUE,
+                language VARCHAR(5) DEFAULT 'en',
+                coins INTEGER DEFAULT 100,
+                experience INTEGER DEFAULT 0,
+                level INTEGER DEFAULT 1
             )
-            ''')
-            
-            # 如果表已存在但缺少 emoji 列，添加它
-            await connection.execute('''
-            ALTER TABLE crops ADD COLUMN IF NOT EXISTS emoji VARCHAR(5)
             ''')
 
             # 创建农场表
@@ -66,7 +61,7 @@ async def init_db():
             )
             ''')
 
-            # 修改作物表
+            # 创建作物表
             await connection.execute('''
             CREATE TABLE IF NOT EXISTS crops (
                 crop_id SERIAL PRIMARY KEY,
@@ -76,35 +71,6 @@ async def init_db():
                 planting_cost INTEGER,
                 emoji VARCHAR(5)
             )
-            ''')
-
-            # 修改动物表
-            await connection.execute('''
-            CREATE TABLE IF NOT EXISTS animals (
-                animal_id SERIAL PRIMARY KEY,
-                name VARCHAR(50) UNIQUE,
-                product VARCHAR(50),
-                production_time INTEGER,
-                sell_price INTEGER,
-                purchase_cost INTEGER,
-                emoji VARCHAR(5)
-            )
-            ''')
-
-            # 修改地区表
-            await connection.execute('''
-            CREATE TABLE IF NOT EXISTS regions (
-                region_id SERIAL PRIMARY KEY,
-                name VARCHAR(50) UNIQUE,
-                required_level INTEGER,
-                exploration_cost INTEGER,
-                emoji VARCHAR(5)
-            )
-            ''')
-
-            # 检查并添加 planting_cost 列
-            await connection.execute('''
-            ALTER TABLE crops ADD COLUMN IF NOT EXISTS planting_cost INTEGER
             ''')
 
             # 创建已种植作物表
@@ -118,6 +84,19 @@ async def init_db():
             )
             ''')
 
+            # 创建动物表
+            await connection.execute('''
+            CREATE TABLE IF NOT EXISTS animals (
+                animal_id SERIAL PRIMARY KEY,
+                name VARCHAR(50) UNIQUE,
+                product VARCHAR(50),
+                production_time INTEGER,
+                sell_price INTEGER,
+                purchase_cost INTEGER,
+                emoji VARCHAR(5)
+            )
+            ''')
+
             # 创建已拥有动物表
             await connection.execute('''
             CREATE TABLE IF NOT EXISTS owned_animals (
@@ -128,7 +107,18 @@ async def init_db():
             )
             ''')
 
-    print("Database tables created successfully.")
+            # 创建地区表
+            await connection.execute('''
+            CREATE TABLE IF NOT EXISTS regions (
+                region_id SERIAL PRIMARY KEY,
+                name VARCHAR(50) UNIQUE,
+                required_level INTEGER,
+                exploration_cost INTEGER,
+                emoji VARCHAR(5)
+            )
+            ''')
+
+    print("数据库表创建成功。")
 
 async def get_user(discord_id):
     async with pool.acquire() as connection:
@@ -309,9 +299,10 @@ async def init_base_data():
 
 async def setup_database():
     await init_pool()
-    await drop_all_tables()  # 添加这一行
+    await drop_all_tables()
     await init_db()
-    await init_base_data()  # 添加这一行
+    await init_base_data()
+    print("数据库设置完成。")
 
 # 更新 __all__ 列表以包含所有新函数
 __all__ = [
