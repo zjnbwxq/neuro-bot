@@ -33,17 +33,17 @@ class NeuroFarmBot(discord.Client):
         self.db_ready = asyncio.Event()
 
     async def setup_hook(self):
-        logger.info("开始设置数据库...")
+        logger.info("Starting to setup database...")
         await setup_database()
         self.db_ready.set()
-        logger.info("数据库设置完成。")
+        logger.info("Database setup complete.")
 
-        logger.info("开始全局同步命令...")
+        logger.info("Starting to sync commands globally...")
         try:
             synced = await self.tree.sync()
-            logger.info(f"全局同步了 {len(synced)} 个命令")
+            logger.info(f"Synced {len(synced)} command(s) globally")
         except Exception as e:
-            logger.error(f"同步命令失败: {e}")
+            logger.error(f"Failed to sync commands: {e}")
 
 client = NeuroFarmBot()
 
