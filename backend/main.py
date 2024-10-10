@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .routers import users, characters, auth, farm
-from .database import engine, Base
+from .database import engine, Base, setup_database
+import asyncio
 
 app = FastAPI(
     title="Neuro Farm API",
@@ -21,11 +22,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 创建数据库表
-Base.metadata.create_all(bind=engine)
+# 创建数据库表和初始化数据
+@app.on_event("startup")
+async def startup_event():
+    await setup_database()
 
 # 包含路由
 app.include_router(auth.router)
 app.include_router(users.router, prefix="/api/users", tags=["users"])
 app.include_router(characters.router)
 app.include_router(farm.router, prefix="/api/farms", tags=["farms"])
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from dotenv import load_dotenv
 
 # 加载环境变量
 load_dotenv()
@@ -28,23 +27,24 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 # 创建基类
 Base = declarative_base()
 
+# 全局连接池
+pool = None
+
 async def init_pool():
     global pool
     try:
         pool = await asyncpg.create_pool(
-            user=db_user,
-            password=db_password,
-            database=db_name,
-            host=db_host,
-            port=db_port,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            database=DB_NAME,
+            host=DB_HOST,
+            port=DB_PORT,
             min_size=2,
             max_size=5
         )
         print("数据库连接池创建成功。")
     except Exception as error:
         print("创建连接池时出错:", error)
-    # 确保导出 engine 和 Base
-__all__ = ["engine", "Base", "SessionLocal"]
 
 async def close_pool():
     global pool
@@ -320,15 +320,6 @@ async def setup_database():
     await init_base_data()
     print("数据库设置完成。")
 
-# 更新 __all__ 列表以包含所有新函数
-__all__ = [
-    'setup_database', 'get_user', 'create_user', 'update_user_language',
-    'update_user_coins', 'update_user_experience', 'get_farm', 'create_farm',
-    'get_crop', 'plant_crop', 'get_planted_crops', 'harvest_crop',
-    'get_animal', 'purchase_animal', 'get_owned_animals', 'collect_animal_product',
-    'get_region', 'get_all_regions', 'close_pool'
-]
-
 async def drop_all_tables():
     async with pool.acquire() as connection:
         await connection.execute('''
@@ -338,9 +329,20 @@ async def drop_all_tables():
         CASCADE
         ''')
     print("所有表格已删除。")
-    def get_db():
+
+def get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
+
+# 更新 __all__ 列表以包含所有函数和变量
+__all__ = [
+    'engine', 'Base', 'SessionLocal', 'setup_database', 'get_user', 'create_user', 
+    'update_user_language', 'update_user_coins', 'update_user_experience', 'get_farm', 
+    'create_farm', 'get_crop', 'plant_crop', 'get_planted_crops', 'harvest_crop',
+    'get_animal', 'purchase_animal', 'get_owned_animals', 'collect_animal_product',
+    'get_region', 'get_all_regions', 'close_pool', 'get_db', 'init_pool', 'init_db',
+    'init_base_data', 'drop_all_tables'
+]
