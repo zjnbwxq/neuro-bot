@@ -1,7 +1,11 @@
+import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .routers import users, characters, auth, farm
 from .database import setup_database
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="Neuro Farm API",
@@ -24,11 +28,20 @@ app.add_middleware(
 # 创建数据库表和初始化数据
 @app.on_event("startup")
 async def startup_event():
+    logger.info("Application is starting up...")
     await setup_database()
 
-   @app.get("/api/test")
-   async def test_route():
-       return {"message": "This is a test route"}
+@app.on_event("shutdown")
+async def shutdown_event():
+    logger.info("Application is shutting down...")
+
+@app.get("/api/test")
+async def test_route():
+    return {"message": "This is a test route"}
+
+@app.get("/api/health")
+async def health_check():
+    return {"status": "healthy"}
 
 # 包含路由
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
